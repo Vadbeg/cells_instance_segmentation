@@ -1,0 +1,3 @@
+data:
+  root_data_path: /home/vadbeg/Data_SSD/Kaggle/cell_instance_segmentation/sartorius-cell-instance-segmentation
+  all_annotations_file: /home/vadbeg/Data_SSD/Kaggle/cell_instance_segmentation/sartorius-cell-instance-segmentation/annotations_all.json
