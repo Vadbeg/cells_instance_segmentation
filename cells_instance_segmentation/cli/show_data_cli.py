@@ -47,8 +47,8 @@ def show_data(
 ) -> None:
     config = load_config(path=config_path)
 
-    all_annotations_file = Path(config['data']['all_annotations_file'])
+    all_annotations_path = Path(config['data']['all_annotations_path'])
     root_data_path = Path(config['data']['root_data_path'])
 
-    coco = _create_coco(annotation_file_path=all_annotations_file)
+    coco = _create_coco(annotation_file_path=all_annotations_path)
     _show_images(coco=coco, images_root=root_data_path, num_of_images=num_of_images)
