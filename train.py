@@ -7,11 +7,20 @@ from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.data.datasets import register_coco_instances
 
+import wandb
 from cells_instance_segmentation.main_utils import load_config
 from cells_instance_segmentation.modules.detectron.trainer import Trainer
 
 if __name__ == '__main__':
     config_path = 'configs/data_config.yaml'
+    NUM_EPOCHS = 50
+    LR = 0.0005
+    BATCH_SIZE = 3
+
+    wandb.init(
+        sync_tensorboard=True,
+        settings=wandb.Settings(start_method="thread", console="off"),
+    )
 
     config = load_config(path=config_path)
     detectron_config = get_cfg()
@@ -48,12 +57,16 @@ if __name__ == '__main__':
     detectron_config.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
         config_path="COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
     )
-    detectron_config.SOLVER.IMS_PER_BATCH = 2
-    detectron_config.SOLVER.BASE_LR = 0.0005
-    detectron_config.SOLVER.MAX_ITER = 1000
+    detectron_config.SOLVER.IMS_PER_BATCH = BATCH_SIZE
+    detectron_config.SOLVER.BASE_LR = LR
+    detectron_config.SOLVER.MAX_ITER = (
+        len(DatasetCatalog.get(name='sartorius_train'))
+        * NUM_EPOCHS
+        // detectron_config.SOLVER.IMS_PER_BATCH
+    )
     detectron_config.SOLVER.STEPS = []
     detectron_config.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
-    detectron_config.MODEL.ROI_HEADS.NUM_CLASSES = 3
+    detectron_config.MODEL.ROI_HEADS.NUM_CLASSES = 2
     detectron_config.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     detectron_config.TEST.EVAL_PERIOD = (
         len(DatasetCatalog.get(name='sartorius_train'))
@@ -62,5 +75,5 @@ if __name__ == '__main__':
 
     os.makedirs(detectron_config.OUTPUT_DIR, exist_ok=True)
     trainer = Trainer(detectron_config)
-    trainer.resume_or_load(resume=False)
+    trainer.resume_or_load(resume=True)
     trainer.train()
